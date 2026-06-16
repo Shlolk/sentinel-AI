@@ -7,7 +7,11 @@ const navLinks = [
   { label: "Pricing", href: "#" },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  onLoginClick: () => void;
+}
+
+export default function Navbar({ onLoginClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -48,7 +52,7 @@ export default function Navbar() {
       </nav>
 
       <div className="flex items-center gap-4">
-        <button className="hidden rounded-full border border-white/10 px-4 py-2 font-label-md text-label-md text-white/65 transition-colors hover:border-white/20 hover:text-white sm:inline-flex">
+        <button onClick={onLoginClick} className="hidden rounded-full border border-white/10 px-4 py-2 font-label-md text-label-md text-white/65 transition-colors hover:border-white/20 hover:text-white sm:inline-flex">
           Login
         </button>
         <button className="crimson-glow-hover inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 font-label-md text-label-md font-semibold text-black transition-transform duration-300 hover:scale-[1.03]">

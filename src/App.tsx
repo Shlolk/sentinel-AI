@@ -1,8 +1,18 @@
+import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Footer from "./components/Footer";
+import AuthModal from "./components/AuthModal";
+import Dashboard from "./dashboard/Dashboard";
 
 export default function App() {
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  if (authenticated) {
+    return <Dashboard onLogout={() => setAuthenticated(false)} />;
+  }
+
   return (
     <>
       <div
@@ -16,7 +26,13 @@ export default function App() {
       />
       <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_28%),radial-gradient(circle_at_bottom,_rgba(255,42,42,0.07),_transparent_24%)]" />
 
-      <Navbar />
+      <Navbar onLoginClick={() => setAuthOpen(true)} />
+
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onSuccess={() => { setAuthOpen(false); setAuthenticated(true); }}
+      />
 
       <main className="relative z-10 flex min-h-screen flex-col items-center">
         <Hero />
