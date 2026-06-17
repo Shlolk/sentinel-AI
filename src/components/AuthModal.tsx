@@ -1,13 +1,14 @@
 import { useState, useRef } from "react";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
+import { syncUser } from "../services/api";
 
 type Mode = "login" | "signup";
 
 interface AuthModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (user: { uid: string; email: string }) => void;
 }
 
 export default function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
@@ -66,7 +67,7 @@ export default function AuthModal({ open, onClose, onSuccess }: AuthModalProps) 
   );
 }
 
-function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+function LoginForm({ onSuccess }: { onSuccess: (user: { uid: string; email: string }) => void }) {
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
@@ -80,8 +81,12 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     if (!email || !password) { setError("Please fill in all fields."); return; }
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      onSuccess();
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const user = cred.user;
+      localStorage.setItem("firebase_uid", user.uid);
+      localStorage.setItem("firebase_email", email);
+      try { await syncUser(user.uid, email); } catch {}
+      onSuccess({ uid: user.uid, email });
     } catch (err: any) {
       setError(err.message.replace("Firebase: ", "").replace(/\(.*\)/, "").trim() || "Login failed.");
     } finally {
@@ -93,42 +98,27 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium uppercase tracking-[0.12em] text-white/40">Email</label>
-        <input
-          ref={emailRef}
-          type="email"
-          placeholder="name@company.com"
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25"
-        />
+        <input ref={emailRef} type="email" placeholder="name@company.com" className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium uppercase tracking-[0.12em] text-white/40">Password</label>
-        <input
-          ref={passRef}
-          type="password"
-          placeholder="••••••••"
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25"
-        />
+        <input ref={passRef} type="password" placeholder="••••••••" className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25" />
       </div>
       {error && <p className="text-red-500 text-xs">{error}</p>}
       <div className="flex items-center justify-between text-xs">
         <label className="flex items-center gap-2 text-white/40 cursor-pointer">
-          <input type="checkbox" className="h-3.5 w-3.5 rounded border-white/20 bg-white/5 accent-white" />
-          Remember me
+          <input type="checkbox" className="h-3.5 w-3.5 rounded border-white/20 bg-white/5 accent-white" /> Remember me
         </label>
         <a href="#" className="text-white/40 hover:text-white/60 transition-colors">Forgot password?</a>
       </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-2 w-full rounded-full bg-white py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <button type="submit" disabled={loading} className="mt-2 w-full rounded-full bg-white py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
         {loading ? "Logging in…" : "Log In"}
       </button>
     </form>
   );
 }
 
-function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
+function SignUpForm({ onSuccess }: { onSuccess: (user: { uid: string; email: string }) => void }) {
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
@@ -146,7 +136,11 @@ function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: name });
-      onSuccess();
+      const user = cred.user;
+      localStorage.setItem("firebase_uid", user.uid);
+      localStorage.setItem("firebase_email", email);
+      try { await syncUser(user.uid, email); } catch {}
+      onSuccess({ uid: user.uid, email });
     } catch (err: any) {
       setError(err.message.replace("Firebase: ", "").replace(/\(.*\)/, "").trim() || "Sign up failed.");
     } finally {
@@ -158,37 +152,18 @@ function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium uppercase tracking-[0.12em] text-white/40">Full Name</label>
-        <input
-          ref={nameRef}
-          type="text"
-          placeholder="Jane Doe"
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25"
-        />
+        <input ref={nameRef} type="text" placeholder="Jane Doe" className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium uppercase tracking-[0.12em] text-white/40">Email</label>
-        <input
-          ref={emailRef}
-          type="email"
-          placeholder="name@company.com"
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25"
-        />
+        <input ref={emailRef} type="email" placeholder="name@company.com" className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25" />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium uppercase tracking-[0.12em] text-white/40">Password</label>
-        <input
-          ref={passRef}
-          type="password"
-          placeholder="Create a password"
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25"
-        />
+        <input ref={passRef} type="password" placeholder="Create a password" className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-colors focus:border-white/25" />
       </div>
       {error && <p className="text-red-500 text-xs">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-2 w-full rounded-full bg-white py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <button type="submit" disabled={loading} className="mt-2 w-full rounded-full bg-white py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
         {loading ? "Creating account…" : "Create Account"}
       </button>
       <p className="text-center text-[11px] text-white/30">

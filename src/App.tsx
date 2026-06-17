@@ -8,9 +8,10 @@ import Dashboard from "./dashboard/Dashboard";
 export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ uid: string; email: string } | null>(null);
 
   if (authenticated) {
-    return <Dashboard onLogout={() => setAuthenticated(false)} />;
+    return <Dashboard user={user} onLogout={() => { setAuthenticated(false); setUser(null); localStorage.removeItem("firebase_uid"); localStorage.removeItem("firebase_email"); }} />;
   }
 
   return (
@@ -31,7 +32,7 @@ export default function App() {
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}
-        onSuccess={() => { setAuthOpen(false); setAuthenticated(true); }}
+        onSuccess={(u) => { setUser(u); setAuthOpen(false); setAuthenticated(true); }}
       />
 
       <main className="relative z-10 flex min-h-screen flex-col items-center">
