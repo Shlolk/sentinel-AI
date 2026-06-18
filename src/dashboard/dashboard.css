@@ -5,7 +5,7 @@
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
   --text: #ffffff;
-  --muted: #8d8d8d;
+  --muted: #b0b0b0;
   --red: #ff2b2b;
   --amber: #f59e0b;
   --green: #22c55e;
@@ -14,7 +14,11 @@
   grid-template-columns: 280px 1fr;
   height: 100vh;
   color: var(--text);
-  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background: var(--bg);
   overflow: hidden;
 }
@@ -108,7 +112,9 @@
   gap: 14px;
   padding: 12px 14px;
   border-radius: 10px;
-  color: #a0a0a0;
+  color: #c0c0c0;
+  font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
   transition: color 180ms ease, background 180ms ease, transform 180ms ease;
@@ -150,10 +156,10 @@
 
 .dashboard-eyebrow {
   margin: 0;
-  font-size: 0.66rem;
-  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #848484;
+  color: #a0a0a0;
 }
 
 .circular-score {
@@ -663,7 +669,7 @@
 
 .dashboard-domain-item span {
   color: #8b8b8b;
-  font-size: 0.64rem;
+  font-size: 0.72rem;
 }
 
 .dashboard-domain-visual {
@@ -828,7 +834,7 @@
 .dashboard-radar-labels {
   position: absolute;
   inset: 0;
-  font-size: 0.46rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
   color: #676767;
   pointer-events: none;
@@ -962,7 +968,7 @@
   padding: 5px 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
-  font-size: 0.56rem;
+  font-size: 0.7rem;
 }
 
 .dashboard-feed-footer {
@@ -1019,7 +1025,7 @@
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.08);
   color: #a2a2a2;
-  font-size: 0.52rem;
+  font-size: 0.65rem;
   letter-spacing: 0.16em;
 }
 
@@ -1156,7 +1162,7 @@
 
 .dashboard-timeline-nodes p {
   color: #8a8a8a;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
 }
 
 .dashboard-timeline-nodes strong {

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from app.database import engine, SessionLocal
+from app.database import engine, SessionLocal, Base
 from app.config import get_settings
 
 from app.routes import users, projects, documents, assumptions, dashboard, alerts, recommendations, copilot
@@ -14,13 +14,25 @@ app = FastAPI(
     version="1.0.0",
 )
 
+origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "https://sentinel-ai-frontend.onrender.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)
 
 app.include_router(users.router)
 app.include_router(projects.router)
